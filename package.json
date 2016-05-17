@@ -1,5 +1,5 @@
 {
-  "name": "BoilerPlate",
+  "name": "order-management-service",
   "version": "1.0.0",
   "description": "A boiler plate project for NodeJs",
   "main": "server.js",
@@ -7,6 +7,7 @@
   "scripts": {
     "watch": "watchify -d public/scripts/app.js -o public/scripts/bundle.js -v",
     "build": "browserify public/scripts/app.js -o public/scripts/bundle.js",
+    "test": "mocha --reporter list app/tests/*.js",
     "start": "npm run watch & nodemon server.js"
   },
   "dependencies": {
@@ -32,6 +33,21 @@
     "minimist": "*"
   },
   "browserify": {
-    "transform": [["babelify", { "presets": ["es2015", "react"] }]]
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015",
+            "react"
+          ]
+        }
+      ]
+    ]
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "supertest": "^1.2.0"
   }
 }

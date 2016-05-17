@@ -23,5 +23,4 @@ var orderItemSchema = new Schema({
   updatedTime: { type: Date },
 });
 
-// module.exports = mongoose.model('OrderItem', orderItemSchema);
 module.exports = orderItemSchema;

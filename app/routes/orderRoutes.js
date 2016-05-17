@@ -46,7 +46,6 @@ module.exports = function (app) {
 
       // expected request body:
       // {
-      //   order: '123456789',
       //   status: 'SHIPPED'
       // }
       order.status = req.body.status;
