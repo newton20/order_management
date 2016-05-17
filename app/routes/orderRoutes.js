@@ -5,7 +5,11 @@ module.exports = function (app) {
   // POST: /api/v1/orders
   // create a new order
   app.post('/api/v1/orders', function (req, res) {
-    Order.create(req.body, function (err, order) {
+    
+    var requestBody = req.body;
+    requestBody.updatedTime = Date.now();
+    
+    Order.create(requestBody, function (err, order) {
       if (err) {
         return res.send(err);
       }

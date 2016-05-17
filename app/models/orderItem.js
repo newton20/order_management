@@ -2,7 +2,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var orderItemSchema = new Schema({
-  id: { type: String, required: true },
   product: {
     id: { type: String, required: true },
     mcpSku: { type: String, required: true },
@@ -13,6 +12,7 @@ var orderItemSchema = new Schema({
     id: { type: String },
   },
   amount: {
+    currency: { type: String },
     itemAmount: { type: Number },
     shippingAmount: { type: Number },
     taxAmount: { type: Number },
@@ -23,4 +23,5 @@ var orderItemSchema = new Schema({
   updatedTime: { type: Date },
 });
 
-module.exports = mongoose.model('OrderItem', orderItemSchema);
+// module.exports = mongoose.model('OrderItem', orderItemSchema);
+module.exports = orderItemSchema;

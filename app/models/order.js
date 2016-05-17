@@ -1,11 +1,17 @@
 var mongoose = require('mongoose');
-var orderItemModule = require('./order_item');
+var orderItemSchema = require('./orderItem');
 var Schema = mongoose.Schema;
 
 var orderSchema = new Schema({
   items: [
-    orderItemModule.OrderItemSchema,
+    orderItemSchema,
   ],
+  shopper: {
+    id: { type: String },
+    name: { type: String },
+    email: { type: String },
+    phone: { type: String },
+  },
   shippingAddress: {
     name: { type: String },
     address1: { type: String },
