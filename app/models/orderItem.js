@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var orderItemSchema = new Schema({
+  mcpId: { type: String },
   product: {
     id: { type: String, required: true },
     mcpSku: { type: String, required: true },
