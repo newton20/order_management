@@ -8,18 +8,22 @@ var orderSchema = new Schema({
     orderItemSchema,
   ],
   shopper: {
-    id: { type: String },
+    key: { type: String, index: true },
     name: { type: String },
     email: { type: String },
     phone: { type: String },
   },
   shippingAddress: {
-    name: { type: String },
-    address1: { type: String },
-    address2: { type: String },
+    firstName: { type: String },
+    familyName: { type: String },
+    company: { type: String },
+    street1: { type: String },
+    street2: { type: String },
     city: { type: String },
-    province: { type: String },
+    region: { type: String },
+    country: { type: String },
     zipcode: { type: String },
+    phone: { type: String }
   },
   shippingOption: {
     id: { type: String },

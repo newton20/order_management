@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 var orderItemSchema = new Schema({
   mcpId: { type: String },
+  quantity: { type: Number, required: true },
   product: {
     id: { type: String, required: true },
     mcpSku: { type: String, required: true },
