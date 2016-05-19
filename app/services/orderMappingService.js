@@ -12,7 +12,11 @@ var mapMerchantOrderToPlatformOrder = function (merchantOrder) {
             'skuCode': item.product.mcpSku,
             'quantity': item.quantity,
             'merchantProductName': item.product.name,
-            'documentReference': item.document.id
+            'documentReference': item.document.id,
+            'customsInformation': {
+                'listPrice': item.amount.totalAmount,
+                'pricePaid': item.amount.totalAmount
+            }
         };
         items.push(platformItem);
     });

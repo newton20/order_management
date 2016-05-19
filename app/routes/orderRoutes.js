@@ -84,7 +84,7 @@ module.exports = function (app) {
         username: 'mow-china',
         password: 'Spap4uPhUpHe',
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-        data: platformOrder
+        data: JSON.stringify(platformOrder)
       }).on('success', function (savedOrder, response) {
         
         // on success, update merchant order with identifiers returned from platform
@@ -106,7 +106,7 @@ module.exports = function (app) {
         });
       }).on('fail', function (data, response) {
         // if platform returned a fail signal, bubble failure to client with returned data
-        return res.status(400).send(data);
+        return res.status(response.statusCode).send(data);
       }).on('error', function (err, response) {
         // if unexpected happens, bubble exception to client with error information
         return res.status(500).send(err);
