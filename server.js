@@ -42,10 +42,6 @@ app.use(function (req, res, next) {
   next();
 });
 
-// Set up subpath
-var subpath = express();
-app.use('/v1', subpath);
-
 // set the static files location
 app.use(express.static(__dirname + '/public'));
 
@@ -55,7 +51,7 @@ app.use('/bower_components',  express.static(__dirname + '/bower_components'));
 // set up swagger ui
 // reference: https://github.com/shawngong/Swagger-Node-Express-For-Existing-APIs
 app.use('/swagger', express.static('./swagger/dist'));
-swagger.setAppHandler(subpath);
+swagger.setAppHandler(app);
 swagger.configureSwaggerPaths('', 'api-docs', '');
 swagger.configure('http://localhost:6999', '1.0.0');
 
@@ -88,7 +84,7 @@ routesFiles.forEach(function (file) {
 app.listen(port);
 
 // shoutout to the user
-console.log('Boiler plate is listening on port ' + port);
+console.log('Order management service is listening on port ' + port);
 
 // expose app
 exports = module.exports = app;
