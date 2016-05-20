@@ -57,21 +57,6 @@ module.exports = function(app) {
   });
 
   //
-  // GET: /api/v1/order/:id
-  // get an order by id
-  app.get('/api/v1/order/:id', function(req, res) {
-    var id = req.params.id;
-    Order.findById(id, function(err, order) {
-      if (err) {
-        return res.status(404).send(err);
-      }
-
-      res.setHeader('Cache-Control', 'no-cache');
-      return res.json(order);
-    });
-  });
-
-  //
   // PUT: /api/v1/order/:id
   // update order status by id
   app.put('/api/v1/order/:id', function(req, res) {
@@ -127,6 +112,42 @@ module.exports = function(app) {
         res.setHeader('Cache-Control', 'no-cache');
         return res.json(order);
       });
+    });
+  });
+  
+  //
+  // GET: /api/v1/order/:id
+  // get an order by id
+  app.get('/api/v1/order/:id', function(req, res) {
+    var id = req.params.id;
+    Order.findById(id, function(err, order) {
+      if (err) {
+        return res.status(404).send(err);
+      }
+
+      res.setHeader('Cache-Control', 'no-cache');
+      return res.json(order);
+    });
+  });
+  
+  //
+  // GET: /api/v1/order/:order_id/items/status/:status
+  // get items in an order that match provided status
+  app.get('/api/v1/order/:order_id/items/status/:status', function (req, res) {
+    var orderId = req.params.order_id;
+    var itemStatus = req.params.status;
+    
+    Order.findById(orderId, function (err, order) {
+      if (err) {
+        return res.status(404).send(err);
+      }
+      
+      var matchedItems = underscore.where(order.items, function (item) {
+        return item.status === itemStatus;
+      });
+      
+      res.setHeader('Cache-Control', 'no-cache');
+      return res.json(matchedItems);
     });
   });
 
