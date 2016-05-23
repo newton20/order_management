@@ -15,7 +15,9 @@ var mapMerchantOrderToPlatformOrder = function (merchantOrder) {
             'skuCode': item.product.mcpSku,
             'quantity': item.quantity,
             'merchantProductName': item.product.name,
-            'documentReference': item.document.id,
+            'documentReference': {
+                'documentId': item.document.id,
+            },
             'customsInformation': {
                 'listPrice': item.amount.totalAmount,
                 'pricePaid': item.amount.totalAmount
@@ -78,6 +80,9 @@ var updateOrderStatus = function (order, newStatus, orderStatusCallback) {
     orderStatusCallback(null, order);
 };
 
+//
+// Update item status
+// itemStatusCallback accepts two parameters: error and updated order object
 var updateItemStatus = function (order, itemId, newStatus, itemStatusCallback) {
     // If new status is not valid, return error to caller
     if (!underscore.contains(underscore.keys(statuses), newStatus)) {
