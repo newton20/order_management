@@ -1,12 +1,13 @@
-var statuses = [
-    'NEW',                   // an order/item is newly added to merchant system
-    'WAITING_USER_DESIGN',   // an order/item that is waiting on user design
-    'RELEASE_PENDING',       // user finished design but waiting on package delivery
-    'RELEASED',              // package received, released to mcp platform
-    'PLATFORM_REJECTED',     // order/item rejected by mcp platform
-    'SHIPPED',               // mcp platform shipped the order/item to customer
-    'CANCELLED',             // order/item has been cancelled
-    'COMPLETED'              // order/item completed
-];
+var statuses = {
+    'NEW': 0,                    // an order/item is newly added to merchant system
+    'DESIGN_FINISHED': 10,       // user has finished designed for an order/item
+    'RELEASED_TO_PLATFORM': 11,  // an order has been released to mcp platform
+    'IN_PRODUCTION': 20,         // an order/item is in production by mcp platform
+    'PLATFORM_REJECTED': 21,     // an order/item rejected by mcp platform
+    'SHIPPED': 30,               // an order/item has been produced and shipped to client
+    'USER_CANCELLED': 31,        // an order/item has been cancelled by user
+    'MERCHANT_CANCELLED': 32,    // an order/item has been cancelled by merchant
+    'PLATFORM_CANCELLED': 33,    // an order/item has been cancelled by mcp platform
+};
 
 module.exports = statuses;

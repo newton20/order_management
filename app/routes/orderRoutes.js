@@ -1,5 +1,6 @@
 var Order = require('../models/order');
-var OrderMapper = require('../services/orderMappingService');
+var Statuses = require('../models/status');
+var OrderService = require('../services/orderService');
 var rest = require('restler');
 var underscore = require('underscore');
 
@@ -42,7 +43,8 @@ module.exports = function(app) {
       if (!item) {
         return res.status(404).send('item not found');
       }
-      // {docId : '1231' }
+      
+      // { docId : '1231' }
       item.document = {"id":docid};
 
       order.save(function(err) {
@@ -71,46 +73,48 @@ module.exports = function(app) {
       //   status: 'SHIPPED'
       // }
       order.status = req.body.status;
-      order.save(function(err) {
+      OrderService.updateOrderStatus(order, req.body.status, function (err, updatedOrder) {
         if (err) {
           return res.status(404).send(err);
         }
-
-        res.setHeader('Cache-Control', 'no-cache');
-        return res.json(order);
+        
+        updatedOrder.save(function (err) {
+          if (err) {
+            return res.status(404).send(err);
+          }
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.json(updatedOrder);
+        });
       });
     });
   });
 
-  // PUT:
+  //
+  // PUT: /api/v1/order/:order_id/item/:item_id
   // update order item status by order id and item id
   app.put('/api/v1/order/:order_id/item/:item_id', function(req, res) {
     var orderid = req.params.order_id;
     var itemid = req.params.item_id;
-
+    
+    // expected request body:
+    // {
+    //   status: 'SHIPPED'
+    // }
+    var newStatus = req.body.status;
     Order.findById(orderid, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
-      var item = underscore.find(order.items, function(item) {
+      
+      OrderService.updateItemStatus(order, itemid, newStatus, function (err, updatedOrder) {
+        updatedOrder.save(function (err) {
+          if (err) {
+            return res.status(404).send(err);
+          }
 
-        return item._id.toString() === itemid;
-      });
-
-
-      // expected request body:
-      // {
-      //   status: 'SHIPPED'
-      // }
-      item.status = req.body.status;
-
-      order.save(function(err) {
-        if (err) {
-          return res.status(404).send(err);
-        }
-
-        res.setHeader('Cache-Control', 'no-cache');
-        return res.json(order);
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.json(updatedOrder);
+        });
       });
     });
   });
@@ -166,7 +170,7 @@ module.exports = function(app) {
       }
 
       // map merchant order to platform order
-      var platformOrder = OrderMapper.mapMerchantOrderToPlatformOrder(order);
+      var platformOrder = OrderService.mapMerchantOrderToPlatformOrder(order);
 
       // send platform order to mcp platform
       rest.post('https://int-merchantorder.commerce.cimpress.io/v1/orders', {
