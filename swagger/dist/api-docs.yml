@@ -1,0 +1,205 @@
+# Example YAML to get you started quickly.
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+
+# This is your document metadata
+info:
+  version: 1.0.0
+  title: Cimpress China order management service
+  description: Order management service for Cimpress China
+schemes:
+  - http
+  - https
+basePath: /api/v1
+produces: 
+  - application/json
+consumes:
+  - application/json
+
+# Describe your paths here
+paths:
+  /orders:
+    post:
+      tags: ["Orders"]
+      description: Creates a new order
+      operationId: addOrder
+      parameters:
+        - name: order
+          in: body
+          description: Pet to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/order'
+      responses:
+        '200':
+          description: order response
+          schema:
+            $ref: '#/definitions/order'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+  /order/{orderId}:
+    get:
+      tags: ["Orders"]
+      description: Get an order
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          description: order response
+          schema:
+            $ref: '#/definitions/order'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/errorModel'
+definitions:
+  order:
+    type: object
+    required:
+      - shopper
+      - shippingAddress
+      - items
+      - status
+    properties:
+      mcpId:
+        type: string
+        description: Unique identifier of an order in MCP platform
+      shopper:
+        $ref: "#/definitions/shopper"
+      shippingAddress:
+        $ref: '#/definitions/shippingAddress'
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/orderItem'
+      status: 
+        type: string
+        description: Order status
+      createdTime: 
+        type: string
+        format: date-time
+        description: Time at which the order is created
+      updatedTime:
+        type: string
+        format: date-time
+        description: Time at which the order is updated
+  orderItem:
+    type: object
+    required:
+      - quantity
+      - product
+      - amount
+      - status
+    properties:
+      mcpId:
+        type: string
+        description: Unique identifier of an order item in MCP platform
+      quantity:
+        type: number
+      product:
+        $ref: '#/definitions/product'
+      document:
+        $ref: '#/definitions/document'
+      amount:
+        $ref: '#/definitions/itemAmount'
+      status:
+        type: string
+        description: Item status
+      createdTime: 
+        type: string
+        format: date-time
+        description: Time at which the order is created
+      updatedTime:
+        type: string
+        format: date-time
+        description: Time at which the order is updated
+  product:
+    type: object
+    properties:
+      mcpSku: 
+        type: string
+        description: SKU in MCP product catalog
+      name:
+        type: string
+        description: Name of the product
+      description:
+        type: string
+  document:
+    type: object
+    properties:
+      documentId: 
+        type: string
+        description: Unique identifier of the document in MCP platform
+  itemAmount:
+    type: object
+    required:
+      - currency
+      - itemAmount
+      - totalAmount
+    properties:
+      currency:
+        type: string
+      itemAmount:
+        type: number
+      shippingAmount:
+        type: number
+      taxAmount:
+        type: number
+      totalAmount:
+        type: number
+  shopper:
+    type: object
+    properties:
+      key: 
+        type: string
+        description: Unique identifier of the shopper
+      name: 
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+  shippingAddress:
+    type: object
+    required: 
+      - city
+      - country
+    properties:
+      firstName:
+        type: string
+      familyName:
+        type: string
+      company:
+        type: string
+      street1:
+        type: string
+      street2:
+        type: string
+      city:
+        type: string
+      region:
+        type: string
+      country:
+        type: string
+      zipcode:
+        type: string
+      phone:
+        type: string
+  errorModel:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
