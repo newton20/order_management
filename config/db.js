@@ -1,3 +1,3 @@
 module.exports = {
-  url: 'mongodb://localhost:27017/test_react',
+  url: 'mongodb://chinateam:china@ds023902.mlab.com:23902/cimpress_china',
 };
