@@ -88,14 +88,11 @@ module.exports = function(app) {
         return res.status(204).send('Order not found with id ' + id);
       }
 
-      var itemProcessed = 0;
       var updatedOrder = order;
-      // for (var i = 0; i < itemsWithNewStatus.length; i++) {
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
     
         if (!itemId) {
-          itemProcessed++;
           return;
         }
         // update order status
@@ -112,7 +109,6 @@ module.exports = function(app) {
           return res.status(500).send(err);
         }
         res.setHeader("connection", "keep-alive");
-        res.setHeader('content-type', null);
         res.json(updatedOrder);
       });
     });
