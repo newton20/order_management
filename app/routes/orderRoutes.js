@@ -93,7 +93,7 @@ module.exports = function(app) {
       // for (var i = 0; i < itemsWithNewStatus.length; i++) {
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
-        console.log(itemId);
+    
         if (!itemId) {
           itemProcessed++;
           return;
