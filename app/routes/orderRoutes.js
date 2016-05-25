@@ -88,8 +88,8 @@ module.exports = function(app) {
         return res.status(204).send('Order not found with id ' + id);
       }
 
-
       var itemProcessed = 0;
+      var updatedOrder = order;
       // for (var i = 0; i < itemsWithNewStatus.length; i++) {
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
@@ -98,30 +98,26 @@ module.exports = function(app) {
           itemProcessed++;
           return;
         }
+        // update order status
+        OrderService.updateItemStatus(order, itemId, newItemStatus, function(err, ordercallback) {
+          if(err){
+            return res.status(500).send(err);
+          }
+          updatedOrder = ordercallback;
+        });
+      });
 
-           // update order status
-        OrderService.updateItemStatus(order, itemId, newItemStatus,
-          function(err, updatedOrder) {
-
-            if (err) {
-              return res.status(500).send(err);
-            }
-
-            updatedOrder.save(function(err) {
-              if (err) {
-                return res.status(500).send(err);
-              }
-              itemProcessed++;
-              if (itemProcessed === itemsWithNewStatus.length) {
-                res.setHeader("connection", "keep-alive");
-                res.setHeader('content-type', null);
-
-                res.json(updatedOrder);
-              }
-            });
-          });
+      updatedOrder.save(function(err) {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        res.setHeader("connection", "keep-alive");
+        res.setHeader('content-type', null);
+        res.json(updatedOrder);
       });
     });
+
+
   });
 
   //
