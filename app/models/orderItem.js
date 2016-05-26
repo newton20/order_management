@@ -7,7 +7,7 @@ var orderItemSchema = new Schema({
   quantity: { type: Number, required: true },
   product: {
     id: { type: String, required: true },
-    mcpSku: { type: String, required: true },
+    mcpSku: { type: String },
     name: { type: String },
     description: { type: String },
   },

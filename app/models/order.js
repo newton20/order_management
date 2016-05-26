@@ -9,8 +9,10 @@ var orderSchema = new Schema({
     orderItemSchema,
   ],
   shopper: {
+    shopperReferenceId: { type: String, required: true },
     key: { type: String, index: true },
-    name: { type: String },
+    firstName: { type: String },
+    familyName: { type: String },
     email: { type: String },
     phone: { type: String },
   },
