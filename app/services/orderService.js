@@ -68,12 +68,12 @@ var updateOrderStatus = function(order, newStatus, orderStatusCallback) {
   underscore.each(order.items, function(item) {
     var itemStatusValue = statuses[item.status];
 
-        // If item in a status has higher value, do nothing
+    // If item in a status has higher value, do nothing
     if (itemStatusValue > orderStatusValue) {
       return;
     }
 
-        // Else, update item status to the same as order status
+    // Else, update item status to the same as order status
     item.status = newStatus;
   });
 

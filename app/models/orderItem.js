@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var orderItemSchema = new Schema({
+  itemReferenceId: { type: String, required: true },
   mcpId: { type: String },
   quantity: { type: Number, required: true },
   product: {

@@ -112,8 +112,6 @@ module.exports = function(app) {
         res.json(updatedOrder);
       });
     });
-
-
   });
 
   //
@@ -204,8 +202,8 @@ module.exports = function(app) {
         return res.status(404).send(err);
       }
 
-      var matchedItems = underscore.where(order.items, function(item) {
-        return item.status === itemStatus;
+      var matchedItems = underscore.filter(order.items, function(item) {
+        return item.status.toLowerCase() === itemStatus.toLowerCase();
       });
 
       res.setHeader('Cache-Control', 'no-cache');

@@ -3,6 +3,7 @@ var orderItemSchema = require('./orderItem');
 var Schema = mongoose.Schema;
 
 var orderSchema = new Schema({
+  orderReferenceId: { type: String, required: true, index: true },
   mcpId: { type: String },
   items: [
     orderItemSchema,
