@@ -88,40 +88,32 @@ module.exports = function(app) {
         return res.status(204).send('Order not found with id ' + id);
       }
 
-
-      var itemProcessed = 0;
-      // for (var i = 0; i < itemsWithNewStatus.length; i++) {
+      var updatedOrder = order;
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
-        console.log(itemId);
+    
         if (!itemId) {
-          itemProcessed++;
           return;
         }
+        // update order status
+        OrderService.updateItemStatus(order, itemId, newItemStatus, function(err, ordercallback) {
+          if(err){
+            return res.status(500).send(err);
+          }
+          updatedOrder = ordercallback;
+        });
+      });
 
-           // update order status
-        OrderService.updateItemStatus(order, itemId, newItemStatus,
-          function(err, updatedOrder) {
-
-            if (err) {
-              return res.status(500).send(err);
-            }
-
-            updatedOrder.save(function(err) {
-              if (err) {
-                return res.status(500).send(err);
-              }
-              itemProcessed++;
-              if (itemProcessed === itemsWithNewStatus.length) {
-                res.setHeader("connection", "keep-alive");
-                res.setHeader('content-type', null);
-
-                res.json(updatedOrder);
-              }
-            });
-          });
+      updatedOrder.save(function(err) {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        res.setHeader("connection", "keep-alive");
+        res.json(updatedOrder);
       });
     });
+
+
   });
 
   //
