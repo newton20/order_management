@@ -7,6 +7,7 @@ var bodyParser     = require('body-parser');
 var methodOverride = require('method-override');
 var mongoose       = require('mongoose');
 var fs             = require('fs');
+var https          = require('https');
 var argv           = require('minimist')(process.argv.slice(2));
 var swagger        = require('swagger-node-express');
 
@@ -80,8 +81,13 @@ routesFiles.forEach(function (file) {
 });
 
 // start app ===============================================
-// startup our app at http://localhost:8080
-app.listen(port);
+// startup our app at http://localhost:10100
+var options = {
+  pfx: fs.readFileSync('CimpressChina-2037.pfx'),
+  passphrase: '123456'
+};
+
+https.createServer(options, app).listen(port);
 
 // shoutout to the user
 console.log('Order management service is listening on port ' + port);
