@@ -1,5 +1,5 @@
 var Order = require('../models/order');
-var Statuses = require('../models/status');
+var statusMap = require('../models/statusMap');
 var OrderService = require('../services/orderService');
 var rest = require('restler');
 var underscore = require('underscore');
@@ -43,7 +43,7 @@ module.exports = function(app) {
       if (!item) {
         return res.status(404).send('item not found');
       }
-      
+
       // { docId : '1231' }
       item.document = {"id":docid};
 
@@ -56,6 +56,64 @@ module.exports = function(app) {
         return res.json(order);
       });
     });
+  });
+
+  //
+  // POST: /api/v1/events
+  // receive event callbacks from mcp for status changes.
+  app.post('/api/v1/events', function(req, res) {
+    var eventId = req.body.eventId;
+    var eventType = req.body.eventType;
+    var orderId = req.body.orderId;
+    var merchantOrderId = req.body.merchantOrderId;
+    var newItemStatus = statusMap[eventType];
+
+    // check if the mcp event maps to a merchant status change
+    if (!newItemStatus) {
+      return res.status(204).send('no content');
+    }
+
+    var itemsWithNewStatus = req.body[eventType + 'Details'];
+
+    if (!itemsWithNewStatus || itemsWithNewStatus.length === 0) {
+      return res.status(204).send('no content');
+    }
+
+    Order.findById(merchantOrderId, function(err, order) {
+      if (err) {
+        return res.status(404).send(err);
+      }
+
+      if (!order || !order._id) {
+        return res.status(204).send('Order not found with id ' + id);
+      }
+
+      var updatedOrder = order;
+      underscore.each(itemsWithNewStatus, function(item) {
+        var itemId = item.merchantItemId;
+    
+        if (!itemId) {
+          return;
+        }
+        // update order status
+        OrderService.updateItemStatus(order, itemId, newItemStatus, function(err, ordercallback) {
+          if(err){
+            return res.status(500).send(err);
+          }
+          updatedOrder = ordercallback;
+        });
+      });
+
+      updatedOrder.save(function(err) {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        res.setHeader("connection", "keep-alive");
+        res.json(updatedOrder);
+      });
+    });
+
+
   });
 
   //
@@ -72,13 +130,13 @@ module.exports = function(app) {
       // {
       //   status: 'SHIPPED'
       // }
-      order.status = req.body.status;
-      OrderService.updateOrderStatus(order, req.body.status, function (err, updatedOrder) {
+      var newStatus = req.body.status;
+      OrderService.updateOrderStatus(order, newStatus, function(err, updatedOrder) {
         if (err) {
           return res.status(404).send(err);
         }
-        
-        updatedOrder.save(function (err) {
+
+        updatedOrder.save(function(err) {
           if (err) {
             return res.status(404).send(err);
           }
@@ -95,7 +153,7 @@ module.exports = function(app) {
   app.put('/api/v1/order/:order_id/item/:item_id', function(req, res) {
     var orderid = req.params.order_id;
     var itemid = req.params.item_id;
-    
+
     // expected request body:
     // {
     //   status: 'SHIPPED'
@@ -105,9 +163,9 @@ module.exports = function(app) {
       if (err) {
         return res.status(404).send(err);
       }
-      
-      OrderService.updateItemStatus(order, itemid, newStatus, function (err, updatedOrder) {
-        updatedOrder.save(function (err) {
+
+      OrderService.updateItemStatus(order, itemid, newStatus, function(err, updatedOrder) {
+        updatedOrder.save(function(err) {
           if (err) {
             return res.status(404).send(err);
           }
@@ -118,7 +176,7 @@ module.exports = function(app) {
       });
     });
   });
-  
+
   //
   // GET: /api/v1/order/:id
   // get an order by id
@@ -133,24 +191,23 @@ module.exports = function(app) {
       return res.json(order);
     });
   });
-  
+
   //
   // GET: /api/v1/order/:order_id/items/status/:status
   // get items in an order that match provided status
-  app.get('/api/v1/order/:order_id/items/status/:status', function (req, res) {
+  app.get('/api/v1/order/:order_id/items/status/:status', function(req, res) {
     var orderId = req.params.order_id;
     var itemStatus = req.params.status;
-    
-    Order.findById(orderId, function (err, order) {
+
+    Order.findById(orderId, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
-      
-      var matchedItems = underscore.filter(order.items,function(e,i,l)
-	  {
-		  return e.status.toLowerCase()===itemStatus.toLowerCase();
-	  });
-      
+
+      var matchedItems = underscore.where(order.items, function(item) {
+        return item.status === itemStatus;
+      });
+
       res.setHeader('Cache-Control', 'no-cache');
       return res.json(matchedItems);
     });
