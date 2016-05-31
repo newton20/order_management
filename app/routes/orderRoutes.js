@@ -213,7 +213,6 @@ module.exports = function(app) {
       }).on('success', function(savedOrder, response) {
 
         // on success, update merchant order with identifiers returned from platform
-        console.log(savedOrder.orderId);
         order.mcpId = savedOrder.orderId;
         
         order.items.forEach(function(item) {
