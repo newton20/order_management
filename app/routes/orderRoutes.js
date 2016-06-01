@@ -12,12 +12,11 @@ module.exports = function(app) {
 
     var requestBody = req.body;
     requestBody.updatedTime = Date.now();
-
+    delete requestBody["_id"];
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);
       }
-
       res.setHeader('Cache-Control', 'no-cache');
       return res.json(order);
     });
@@ -25,27 +24,26 @@ module.exports = function(app) {
 
   //
   // POST: /api/v1/order/:order_id/item/:item_id/documents
-  // create a doc for an order item
+  // create a doc for an order itemk
   app.post('/api/v1/order/:order_id/item/:item_id/documents', function(req, res) {
 
     var orderid = req.params.order_id;
     var itemid = req.params.item_id;
-    var docid = req.body.docId;
+    
     Order.findById(orderid, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
-
-      var item = underscore.find(order.items, function(item) {
-        return item._id.toString() === itemid;
+      
+      var targetItem = underscore.find(order.items, function(item) {
+        return item._id.toString() === itemId;
       });
-
-      if (!item) {
-        return res.status(404).send('item not found');
-      }
-
-      // { docId : '1231' }
-      item.document = {"id":docid};
+      
+      targetItem.document = {
+        'id': req.body.docId,
+        'instructionSourceEndpointUrl': req.body.instructionSourceEndpointUrl,
+        "instructionSourceVersion": req.body.instructionSourceVersion
+      };
 
       order.save(function(err) {
         if (err) {
@@ -64,8 +62,7 @@ module.exports = function(app) {
   app.post('/api/v1/events', function(req, res) {
     var eventId = req.body.eventId;
     var eventType = req.body.eventType;
-    var orderId = req.body.orderId;
-    var merchantOrderId = req.body.merchantOrderId;
+    var orderId = req.body.merchantOrderId;
     var newItemStatus = statusMap[eventType];
 
     // check if the mcp event maps to a merchant status change
@@ -79,7 +76,7 @@ module.exports = function(app) {
       return res.status(204).send('no content');
     }
 
-    Order.findById(merchantOrderId, function(err, order) {
+    Order.findById(orderId, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -87,33 +84,34 @@ module.exports = function(app) {
       if (!order || !order._id) {
         return res.status(204).send('Order not found with id ' + id);
       }
-
-      var updatedOrder = order;
+      
+      var updatedOrder = order
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
     
         if (!itemId) {
           return;
         }
+        
         // update order status
-        OrderService.updateItemStatus(order, itemId, newItemStatus, function(err, ordercallback) {
+        OrderService.updateItemStatus(updatedOrder, itemId, newItemStatus, function(err, orderCallback) {
           if(err){
             return res.status(500).send(err);
           }
-          updatedOrder = ordercallback;
+          
+          updatedOrder = orderCallback;
+        });
+        
+        updatedOrder.save(function(err, savedOrder) {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.json(savedOrder);
         });
       });
-
-      updatedOrder.save(function(err) {
-        if (err) {
-          return res.status(500).send(err);
-        }
-        res.setHeader("connection", "keep-alive");
-        res.json(updatedOrder);
-      });
     });
-
-
   });
 
   //
@@ -121,29 +119,16 @@ module.exports = function(app) {
   // update order status by id
   app.put('/api/v1/order/:id', function(req, res) {
     var id = req.params.id;
-    Order.findById(id, function(err, order) {
+    // expected request body:
+    // {
+    //   status: 'SHIPPED'
+    // }
+    var newStatus = req.body.status;
+    OrderService.updateOrderStatus(id, newStatus, function(err, updatedOrder) {
       if (err) {
         return res.status(404).send(err);
       }
-
-      // expected request body:
-      // {
-      //   status: 'SHIPPED'
-      // }
-      var newStatus = req.body.status;
-      OrderService.updateOrderStatus(order, newStatus, function(err, updatedOrder) {
-        if (err) {
-          return res.status(404).send(err);
-        }
-
-        updatedOrder.save(function(err) {
-          if (err) {
-            return res.status(404).send(err);
-          }
-          res.setHeader('Cache-Control', 'no-cache');
-          return res.json(updatedOrder);
-        });
-      });
+      return res.json(updatedOrder);
     });
   });
 
@@ -159,21 +144,13 @@ module.exports = function(app) {
     //   status: 'SHIPPED'
     // }
     var newStatus = req.body.status;
-    Order.findById(orderid, function(err, order) {
+
+    OrderService.updateItemStatus(orderid, itemid, newStatus, function(err, updatedOrder) {
       if (err) {
         return res.status(404).send(err);
       }
-
-      OrderService.updateItemStatus(order, itemid, newStatus, function(err, updatedOrder) {
-        updatedOrder.save(function(err) {
-          if (err) {
-            return res.status(404).send(err);
-          }
-
-          res.setHeader('Cache-Control', 'no-cache');
-          return res.json(updatedOrder);
-        });
-      });
+      
+      return res.json(updatedOrder);
     });
   });
 
@@ -204,8 +181,8 @@ module.exports = function(app) {
         return res.status(404).send(err);
       }
 
-      var matchedItems = underscore.where(order.items, function(item) {
-        return item.status === itemStatus;
+      var matchedItems = underscore.filter(order.items, function(item) {
+        return item.status.toLowerCase() === itemStatus.toLowerCase();
       });
 
       res.setHeader('Cache-Control', 'no-cache');
@@ -240,12 +217,18 @@ module.exports = function(app) {
 
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
-        for (var item in order.items) {
-          var savedItem = savedOrder.items.find(function(orderItem) {
-            return orderItem.merchantItemId === item._id;
+        
+        // iterate through items returned from MCP platform to get mcp item id
+        // update items in merchant order with retrieved mcp item id
+        underscore.each(savedOrder.items, function(savedItem) {
+          var matchedItem = underscore.find(order.items, function(item) {
+            return item._id.toString() === savedItem.merchantItemId;
           });
-          item.mcpId = savedItem.itemId;
-        }
+          
+          if (matchedItem) {
+            matchedItem.mcpId = savedItem.itemId;
+          }
+        });
 
         order.save(function(err) {
           if (err) {
