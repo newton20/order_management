@@ -12,12 +12,12 @@ module.exports = function(app) {
 
     var requestBody = req.body;
     requestBody.updatedTime = Date.now();
-
+    delete requestBody["_id"];
+    console.log(requestBody);
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);
       }
-
       res.setHeader('Cache-Control', 'no-cache');
       return res.json(order);
     });
@@ -32,7 +32,7 @@ module.exports = function(app) {
     var itemid = req.params.item_id;
     var docid = req.body.docId;
     
-    Order.findOne({'orderReferenceId':orderid}, function(err, order) {
+    Order.findById(orderid, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -62,7 +62,8 @@ module.exports = function(app) {
   app.post('/api/v1/events', function(req, res) {
     var eventId = req.body.eventId;
     var eventType = req.body.eventType;
-    var orderId = req.body.orderId;
+    var mcpId = req.body.orderId;
+    var orderId = "";
     var merchantOrderId = req.body.merchantOrderId;
     var newItemStatus = statusMap[eventType];
 
@@ -77,7 +78,7 @@ module.exports = function(app) {
       return res.status(204).send('no content');
     }
 
-    Order.findOne({'orderReferenceId':merchantOrderId}, function(err, order) {
+    Order.findOne({"mcpId": mcpId}, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -85,8 +86,8 @@ module.exports = function(app) {
       if (!order || !order._id) {
         return res.status(204).send('Order not found with id ' + id);
       }
-
-      var updatedOrder = order;
+      orderId = order._id;
+    });
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
     
@@ -94,22 +95,14 @@ module.exports = function(app) {
           return;
         }
         // update order status
-        OrderService.updateItemStatus(order, itemId, newItemStatus, function(err, ordercallback) {
+        OrderService.updateItemStatus(order._id, itemId, newItemStatus, function(err, ordercallback) {
           if(err){
             return res.status(500).send(err);
           }
           updatedOrder = ordercallback;
+          res.json(updatedOrder);
         });
       });
-
-      updatedOrder.save(function(err) {
-        if (err) {
-          return res.status(500).send(err);
-        }
-        res.setHeader("connection", "keep-alive");
-        res.json(updatedOrder);
-      });
-    });
   });
 
   //
@@ -156,7 +149,7 @@ module.exports = function(app) {
   // get an order by id
   app.get('/api/v1/order/:id', function(req, res) {
     var id = req.params.id;
-    Order.findOne({'orderReferenceId':id}, function(err, order) {
+    Order.findById(id, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -173,7 +166,7 @@ module.exports = function(app) {
     var orderId = req.params.order_id;
     var itemStatus = req.params.status;
 
-    Order.findOne({'orderReferenceId':orderId}, function(err, order) {
+    Order.findById(orderId, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -192,7 +185,7 @@ module.exports = function(app) {
   // release an order to MCP platform, defined by order id
   app.get('/api/v1/order/:id/release', function(req, res) {
     var id = req.params.id;
-    Order.findOne({'orderReferenceId':id}, function(err, order) {
+    Order.findById(id, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }

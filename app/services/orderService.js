@@ -71,7 +71,7 @@ var updateOrderStatus = function(orderid, newStatus, orderStatusCallback) {
     orderStatusCallback('Invalid status: ' + newStatus, null);
     return;
   }
-  Order.findOne({ 'orderReferenceId': orderid }, function(err, order){
+  Order.findById(orderid, function(err, order){
     order.status = newStatus;
     var orderStatusValue = statuses[newStatus];
     underscore.each(order.items, function(item) {
@@ -104,7 +104,7 @@ var updateItemStatus = function(orderid, itemId, newStatus, itemStatusCallback) 
     itemStatusCallback('Invalid status: ' + newStatus, null);
     return;
   }
-  Order.findOne({ 'orderReferenceId': orderid }, function(err, order) {
+  Order.findById(orderid, function(err, order) {
     order.items.forEach(function(item) {
         if(item.itemReferenceId === itemId)
           {
