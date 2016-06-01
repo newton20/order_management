@@ -13,6 +13,8 @@ var orderItemSchema = new Schema({
   },
   document: {
     id: { type: String },
+    instructionSourceEndpointUrl: { type: String },
+    instructionSourceVersion: { type: String }
   },
   amount: {
     currency: { type: String },

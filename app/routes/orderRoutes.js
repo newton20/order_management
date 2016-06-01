@@ -24,25 +24,26 @@ module.exports = function(app) {
 
   //
   // POST: /api/v1/order/:order_id/item/:item_id/documents
-  // create a doc for an order item
+  // create a doc for an order itemk
   app.post('/api/v1/order/:order_id/item/:item_id/documents', function(req, res) {
 
     var orderid = req.params.order_id;
     var itemid = req.params.item_id;
-    var docid = req.body.docId;
     
     Order.findById(orderid, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
-
-      order.items.forEach(function(item) {
-        if(item.itemReferenceId === itemid)
-          {
-          // { docId : '1231' }
-          item.document = {"id":docid};
-          }
-      }, this);
+      
+      var targetItem = underscore.find(order.items, function(item) {
+        return item._id.toString() === itemId;
+      });
+      
+      targetItem.document = {
+        'id': req.body.docId,
+        'instructionSourceEndpointUrl': req.body.instructionSourceEndpointUrl,
+        "instructionSourceVersion": req.body.instructionSourceVersion
+      };
 
       order.save(function(err) {
         if (err) {
@@ -61,9 +62,7 @@ module.exports = function(app) {
   app.post('/api/v1/events', function(req, res) {
     var eventId = req.body.eventId;
     var eventType = req.body.eventType;
-    var mcpId = req.body.orderId;
-    var orderId = "";
-    var merchantOrderId = req.body.merchantOrderId;
+    var orderId = req.body.merchantOrderId;
     var newItemStatus = statusMap[eventType];
 
     // check if the mcp event maps to a merchant status change
@@ -77,7 +76,7 @@ module.exports = function(app) {
       return res.status(204).send('no content');
     }
 
-    Order.findOne({"mcpId": mcpId}, function(err, order) {
+    Order.findById(orderId, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -85,23 +84,34 @@ module.exports = function(app) {
       if (!order || !order._id) {
         return res.status(204).send('Order not found with id ' + id);
       }
-      orderId = order._id;
-    });
+      
+      var updatedOrder = order
       underscore.each(itemsWithNewStatus, function(item) {
         var itemId = item.merchantItemId;
     
         if (!itemId) {
           return;
         }
+        
         // update order status
-        OrderService.updateItemStatus(order._id, itemId, newItemStatus, function(err, ordercallback) {
+        OrderService.updateItemStatus(updatedOrder, itemId, newItemStatus, function(err, orderCallback) {
           if(err){
             return res.status(500).send(err);
           }
-          updatedOrder = ordercallback;
-          res.json(updatedOrder);
+          
+          updatedOrder = orderCallback;
+        });
+        
+        updatedOrder.save(function(err, savedOrder) {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.json(savedOrder);
         });
       });
+    });
   });
 
   //
@@ -119,7 +129,7 @@ module.exports = function(app) {
         return res.status(404).send(err);
       }
       return res.json(updatedOrder);
-      });
+    });
   });
 
   //
@@ -135,12 +145,13 @@ module.exports = function(app) {
     // }
     var newStatus = req.body.status;
 
-      OrderService.updateItemStatus(orderid, itemid, newStatus, function(err, updatedOrder) {
-        if (err) {
+    OrderService.updateItemStatus(orderid, itemid, newStatus, function(err, updatedOrder) {
+      if (err) {
         return res.status(404).send(err);
-        }
-          return res.json(updatedOrder);
-      });
+      }
+      
+      return res.json(updatedOrder);
+    });
   });
 
   //
@@ -207,12 +218,17 @@ module.exports = function(app) {
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
         
-        order.items.forEach(function(item) {
-          var matchedItems = underscore.filter(savedOrder.items, function(mcpItem) {
-            return mcpItem.merchantItemId === item.itemReferenceId;
+        // iterate through items returned from MCP platform to get mcp item id
+        // update items in merchant order with retrieved mcp item id
+        underscore.each(savedOrder.items, function(savedItem) {
+          var matchedItem = underscore.find(order.items, function(item) {
+            return item._id.toString() === savedItem.merchantItemId;
           });
-          item.mcpId = matchedItems.itemId;
-        }, this);
+          
+          if (matchedItem) {
+            matchedItem.mcpId = savedItem.itemId;
+          }
+        });
 
         order.save(function(err) {
           if (err) {

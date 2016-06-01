@@ -98,66 +98,60 @@ var updateOrderStatus = function(orderid, newStatus, orderStatusCallback) {
 //
 // Update item status
 // itemStatusCallback accepts two parameters: error and updated order object
-var updateItemStatus = function(orderid, itemId, newStatus, itemStatusCallback) {
+var updateItemStatus = function(order, itemId, newStatus, itemStatusCallback) {
   // If new status is not valid, return error to caller
   if (!underscore.contains(underscore.keys(statuses), newStatus)) {
     itemStatusCallback('Invalid status: ' + newStatus, null);
     return;
   }
-  Order.findById(orderid, function(err, order) {
-    order.items.forEach(function(item) {
-        if(item.itemReferenceId === itemId)
-          {
-          item.status = newStatus;
-          }
-      }, this);
+  
+  var targetItem = underscore.find(order.items, function(item) {
+    return item._id.toString() === itemId;
+  });
+  
+  targetItem.status = newStatus;
 
-    // If all item statuses are at least at new status level
-    // and order status is lagging behind, update order status accordingly
-    var newStatusValue = statuses[newStatus];
-    var allItemOnSameLevel = underscore.every(order.items, function(item) {
-      var itemStatusValue = statuses[item.status];
-      return itemStatusValue >= newStatusValue;
-    });
+  // If all item statuses are at least at new status level
+  // and order status is lagging behind, update order status accordingly
+  var newStatusValue = statuses[newStatus];
+  var allItemOnSameLevel = underscore.every(order.items, function(item) {
+    var itemStatusValue = statuses[item.status];
+    return itemStatusValue >= newStatusValue;
+  });
 
-    var orderStatusValue = statuses[order.status];
-    if (allItemOnSameLevel && orderStatusValue < newStatusValue) {
-      order.status = newStatus;
-    }
-    order.save(function(err) {
-      if (err) {
-        itemStatusCallback(err, null);
-      }
-    });
-    itemStatusCallback(null, order);
-  })
+  var orderStatusValue = statuses[order.status];
+  if (allItemOnSameLevel && orderStatusValue < newStatusValue) {
+    order.status = newStatus;
+  }
+  
+  itemStatusCallback(null, order);
 };
 
-  /*
-  *  HELPER FUNCTIONS BELOW
-  */
+/*
+*  HELPER FUNCTIONS BELOW
+*/
 
-  var mapMerchantOrderAddressToPlatformAddress = function(merchantAddress) {
-    return {
-      'firstName': merchantAddress.firstName,
-      'lastName': merchantAddress.familyName,
-      'company': merchantAddress.company,
-      'street1': merchantAddress.street1,
-      'street2': merchantAddress.street2,
-      'city': merchantAddress.city,
-      'stateOrProvince': merchantAddress.region,
-      'country': merchantAddress.country,
-      'postalCode': merchantAddress.zipcode,
-      'phone': merchantAddress.phone
-    };
+var mapMerchantOrderAddressToPlatformAddress = function(merchantAddress) {
+  return {
+    'firstName': merchantAddress.firstName,
+    'lastName': merchantAddress.familyName,
+    'company': merchantAddress.company,
+    'street1': merchantAddress.street1,
+    'street2': merchantAddress.street2,
+    'city': merchantAddress.city,
+    'stateOrProvince': merchantAddress.region,
+    'country': merchantAddress.country,
+    'postalCode': merchantAddress.zipcode,
+    'phone': merchantAddress.phone
   };
+};
 
-  /*
-  *  HELPER FUNCTIONS ABOVE
-  */
+/*
+*  HELPER FUNCTIONS ABOVE
+*/
 
-  module.exports = {
-    mapMerchantOrderToPlatformOrder: mapMerchantOrderToPlatformOrder,
-    updateOrderStatus: updateOrderStatus,
-    updateItemStatus: updateItemStatus
-  };
+module.exports = {
+  mapMerchantOrderToPlatformOrder: mapMerchantOrderToPlatformOrder,
+  updateOrderStatus: updateOrderStatus,
+  updateItemStatus: updateItemStatus
+};
