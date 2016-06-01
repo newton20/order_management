@@ -13,7 +13,6 @@ module.exports = function(app) {
     var requestBody = req.body;
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
-    console.log(requestBody);
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);
