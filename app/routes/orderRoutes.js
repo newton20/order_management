@@ -13,6 +13,9 @@ module.exports = function(app) {
     var requestBody = req.body;
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
+    underscore.each(requestBody.items, function(item) {
+        delete item["_id"];
+      });
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);
@@ -36,11 +39,11 @@ module.exports = function(app) {
       }
       
       var targetItem = underscore.find(order.items, function(item) {
-        return item._id.toString() === itemId;
+        return item._id.toString() === itemid;
       });
       
       targetItem.document = {
-        'id': req.body.docId,
+        'id': req.body.documentId,
         'instructionSourceEndpointUrl': req.body.instructionSourceEndpointUrl,
         "instructionSourceVersion": req.body.instructionSourceVersion
       };
@@ -144,13 +147,29 @@ module.exports = function(app) {
     //   status: 'SHIPPED'
     // }
     var newStatus = req.body.status;
-
-    OrderService.updateItemStatus(orderid, itemid, newStatus, function(err, updatedOrder) {
+    Order.findById(orderid, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
-      
-      return res.json(updatedOrder);
+
+      if (!order || !order._id) {
+        return res.status(204).send('Order not found with id ' + id);
+      }
+    var updatedOrder = order
+    OrderService.updateItemStatus(updatedOrder, itemid, newStatus, function(err, orderCallback) {
+      if (err) {
+        return res.status(404).send(err);
+      }
+      updatedOrder = orderCallback;
+      updatedOrder.save(function(err, savedOrder) {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.json(savedOrder);
+        });
+    });
     });
   });
 
