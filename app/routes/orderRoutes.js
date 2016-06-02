@@ -168,6 +168,22 @@ module.exports = function(app) {
       return res.json(order);
     });
   });
+  
+    //
+  // GET: /api/v1/order/:id
+  // get an order by orderReferenceId
+  app.get('/api/v1/orderReference/:orderReferenceId', function(req, res) {
+    var orderReferenceId = req.params.orderReferenceId;
+    Order.findOne({'orderReferenceId':orderReferenceId}, function(err, order) {
+      if (err) {
+        return res.status(404).send(err);
+      }
+
+      res.setHeader('Cache-Control', 'no-cache');
+      return res.json(order);
+    });
+  });
+
 
   //
   // GET: /api/v1/order/:order_id/items/status/:status
