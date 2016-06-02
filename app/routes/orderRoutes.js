@@ -27,7 +27,7 @@ module.exports = function(app) {
 
   //
   // POST: /api/v1/order/:order_id/item/:item_id/documents
-  // create a doc for an order itemk
+  // create a doc for an order item
   app.post('/api/v1/order/:order_id/item/:item_id/documents', function(req, res) {
 
     var orderid = req.params.order_id;
@@ -172,8 +172,8 @@ module.exports = function(app) {
     });
   });
   
-    //
-  // GET: /api/v1/order/:id
+  //
+  // GET: /api/v1/orderReference/:orderReferenceId
   // get an order by orderReferenceId
   app.get('/api/v1/orderReference/:orderReferenceId', function(req, res) {
     var orderReferenceId = req.params.orderReferenceId;
@@ -186,7 +186,6 @@ module.exports = function(app) {
       return res.json(order);
     });
   });
-
 
   //
   // GET: /api/v1/order/:order_id/items/status/:status
