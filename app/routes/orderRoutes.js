@@ -13,6 +13,9 @@ module.exports = function(app) {
     var requestBody = req.body;
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
+    underscore.each(requestBody.items, function(item) {
+      delete item["_id"];
+    });
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);
