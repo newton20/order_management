@@ -37,16 +37,15 @@ module.exports = function(app) {
       if (err) {
         return res.status(404).send(err);
       }
-      
-      var targetItem = underscore.find(order.items, function(item) {
-        return item._id.toString() === itemId;
-      });
-      
-      targetItem.document = {
-        'id': req.body.docId,
+      underscore.each(order.items, function(item) {
+        if (item._id.toString() === itemid) {
+          item.document = {
+        'documentId': req.body.documentId,
         'instructionSourceEndpointUrl': req.body.instructionSourceEndpointUrl,
         "instructionSourceVersion": req.body.instructionSourceVersion
-      };
+        };
+        }
+       });      
 
       order.save(function(err) {
         if (err) {
@@ -147,14 +146,26 @@ module.exports = function(app) {
     //   status: 'SHIPPED'
     // }
     var newStatus = req.body.status;
-
-    OrderService.updateItemStatus(orderid, itemid, newStatus, function(err, updatedOrder) {
+     Order.findById(orderid, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
-      
-      return res.json(updatedOrder);
+      var updatedOrder = order;
+      OrderService.updateItemStatus(order, itemid, newStatus, function(err, orderCallback) {
+      if (err) {
+        return res.status(404).send(err);
+      }
+      updatedOrder = orderCallback;
     });
+    updatedOrder.save(function(err, savedOrder) {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.json(savedOrder);
+        });
+   });
   });
 
   //

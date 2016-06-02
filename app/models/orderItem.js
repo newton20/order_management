@@ -12,7 +12,7 @@ var orderItemSchema = new Schema({
     description: { type: String },
   },
   document: {
-    id: { type: String },
+    documentId: { type: String },
     instructionSourceEndpointUrl: { type: String },
     instructionSourceVersion: { type: String }
   },

@@ -17,7 +17,7 @@ var mapMerchantOrderToPlatformOrder = function(merchantOrder) {
       'quantity': item.quantity,
       'merchantProductName': item.product.name,
       'documentReference': {
-        'documentId': item.document.id,
+        'documentId': item.document.documentId,
         'instructionSourceEndpointUrl':'http://originwww.vistaprint.prod/documents/api/rendering/',
         'instructionSourceVersion':'1.1'
       },
