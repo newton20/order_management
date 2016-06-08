@@ -22,8 +22,11 @@ module.exports = function(app) {
       if (err) {
         return res.send(err);
       }
-      var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
-      SMS_Mail.sendSMS(order.shopper.phone,"7472",[order.shopper.familyName,order.partnerId,shortLink]);
+      if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
+      {
+        var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
+        SMS_Mail.sendSMS(order.shopper.phone,"7472",[order.shopper.familyName,order.partnerId,shortLink]);
+      }
       res.setHeader('Cache-Control', 'no-cache');
       return res.json(order);
     });
@@ -114,7 +117,10 @@ module.exports = function(app) {
           }
           if(updatedOrder.status === "SHIPPED")
           {
-            SMS_Mail.sendSMS(updatedOrder.shopper.phone,"15028",[updatedOrder.shopper.familyName,updatedOrder.shippingOption.id]);
+            if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
+            {
+              SMS_Mail.sendSMS(updatedOrder.shopper.phone,"15028",[updatedOrder.shopper.familyName,updatedOrder.shippingOption.id]);
+            }
           }
           res.setHeader('Cache-Control', 'no-cache');
           return res.json(savedOrder);
@@ -253,8 +259,11 @@ module.exports = function(app) {
 
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
-        var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
-        SMS_Mail.sendSMS(order.shopper.phone,"15027",[order.shopper.familyName,shortLink]);
+        if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
+        {
+          var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
+          SMS_Mail.sendSMS(order.shopper.phone,"15027",[order.shopper.familyName,shortLink]);
+        }
         // iterate through items returned from MCP platform to get mcp item id
         // update items in merchant order with retrieved mcp item id
         underscore.each(savedOrder.items, function(savedItem) {
