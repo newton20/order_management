@@ -1,6 +1,8 @@
 var Order = require('../models/order');
 var statusMap = require('../models/statusMap');
 var OrderService = require('../services/orderService');
+var SMS_Mail = require('../services/SMS&MailService');
+var ShortLink = require('../services/ShortLinkService');
 var rest = require('restler');
 var underscore = require('underscore');
 
@@ -19,6 +21,11 @@ module.exports = function(app) {
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);
+      }
+      if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
+      {
+        var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
+        SMS_Mail.sendSMS(order.shopper.phone,"7472",[order.shopper.familyName,order.partnerId,shortLink]);
       }
       res.setHeader('Cache-Control', 'no-cache');
       return res.json(order);
@@ -108,7 +115,13 @@ module.exports = function(app) {
           if (err) {
             return res.status(500).send(err);
           }
-          
+          if(updatedOrder.status === "SHIPPED")
+          {
+            if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
+            {
+              SMS_Mail.sendSMS(updatedOrder.shopper.phone,"15028",[updatedOrder.shopper.familyName,updatedOrder.shippingOption.id]);
+            }
+          }
           res.setHeader('Cache-Control', 'no-cache');
           return res.json(savedOrder);
         });
@@ -151,7 +164,7 @@ module.exports = function(app) {
         return res.status(404).send(err);
       }
       var updatedOrder = order;
-      OrderService.updateItemStatus(order, itemid, newStatus, function(err, orderCallback) {
+      OrderService.updateItemStatus(updatedOrder, itemid, newStatus, function(err, orderCallback) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -246,7 +259,11 @@ module.exports = function(app) {
 
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
-        
+        if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
+        {
+          var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
+          SMS_Mail.sendSMS(order.shopper.phone,"15027",[order.shopper.familyName,shortLink]);
+        }
         // iterate through items returned from MCP platform to get mcp item id
         // update items in merchant order with retrieved mcp item id
         underscore.each(savedOrder.items, function(savedItem) {

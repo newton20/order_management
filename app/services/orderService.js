@@ -13,13 +13,14 @@ var mapMerchantOrderToPlatformOrder = function(merchantOrder) {
   underscore.each(merchantOrder.items, function(item) {
     var platformItem = {
       'merchantItemId': item.itemReferenceId,
+      'eventCallbackUrl': 'https//139.224.29.98:10100/api/v1/events',
       'skuCode': item.product.mcpSku,
       'quantity': item.quantity,
       'merchantProductName': item.product.name,
       'documentReference': {
         'documentId': item.document.documentId,
-        'instructionSourceEndpointUrl':'http://originwww.vistaprint.prod/documents/api/rendering/',
-        'instructionSourceVersion':'1.1'
+        'instructionSourceEndpointUrl': item.document.instructionSourceEndpointUrl,
+        'instructionSourceVersion': item.document.instructionSourceVersion
       },
       'customsInformation': {
         'listPrice': {
