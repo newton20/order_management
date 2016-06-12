@@ -5,6 +5,7 @@ var SMS_Mail = require('../services/SMS&MailService');
 var ShortLink = require('../services/ShortLinkService');
 var rest = require('restler');
 var underscore = require('underscore');
+var mailConfig = require('../../config/mailConfig');
 
 module.exports = function(app) {
   //
@@ -26,6 +27,7 @@ module.exports = function(app) {
       {
         var shortLink = ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id);
         SMS_Mail.sendSMS(order.shopper.phone,"7472",[order.shopper.familyName,order.partnerId,shortLink]);
+        SMS_Mail.sendEmail(mailConfig.newOrder,[order.shopper.familyName,order.partnerId,shortLink],order.shopper.email);
       }
       res.setHeader('Cache-Control', 'no-cache');
       return res.json(order);
