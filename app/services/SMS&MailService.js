@@ -1,13 +1,12 @@
 var rest = require('restler');
 
 var sendSMS = function (receiver,tmplateId,content) {
-    console.log("SMS");
     var criteria = {
         receiver: "[\""+receiver+"\"]",
         template:tmplateId,
         content:JSON.stringify(content)
     };
-    rest.post('http://localhost:8080/SMSService.svc/SMS/Send', {
+    rest.post('http://139.224.68.25:2333/SMSService.svc/SMS/Send', {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {
