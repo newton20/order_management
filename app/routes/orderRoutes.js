@@ -26,10 +26,10 @@ module.exports = function(app) {
       
       ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
         if (order.shopper.phone && order.shopper.phone.length >= 11) {
-          SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName, order.partnerId, shortLink]);
+          SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
         }
         if (order.shopper.email) {
-          SMS_Mail.sendEmail(mailConfig.newOrder, [order.shopper.familyName, order.partnerId, shortLink], order.shopper.email);
+          SMS_Mail.sendEmail(mailConfig.newOrder, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
         }
       });
 
@@ -125,10 +125,10 @@ module.exports = function(app) {
           {
             if(updatedOrder.shopper.phone && updatedOrder.shopper.phone.length >= 11)
             {
-              SMS_Mail.sendSMS(updatedOrder.shopper.phone,"15028",[updatedOrder.shopper.familyName,updatedOrder.shippingOption.id]);
+              SMS_Mail.sendSMS(updatedOrder.shopper.phone,"15028",[updatedOrder.shopper.familyName + " " + order.shopper.firstName,updatedOrder.shippingOption.id]);
             }
             if (order.shopper.email) {
-              SMS_Mail.sendEmail(mailConfig.orderShipped, [order.shopper.familyName, updatedOrder.shippingOption.id], order.shopper.email);
+              SMS_Mail.sendEmail(mailConfig.orderShipped, [order.shopper.familyName + " " + order.shopper.firstName, updatedOrder.shippingOption.id], order.shopper.email);
             }
           }
           res.setHeader('Cache-Control', 'no-cache');
@@ -271,11 +271,11 @@ module.exports = function(app) {
         
         ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
-            SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName, shortLink]);
+            SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName + " " + order.shopper.firstName, shortLink]);
           }
           
           if (order.shopper.email) {
-            SMS_Mail.sendEmail(mailConfig.orderPalced, [order.shopper.familyName, order.partnerId, shortLink], order.shopper.email);
+            SMS_Mail.sendEmail(mailConfig.orderPalced, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
           }
         });
         // iterate through items returned from MCP platform to get mcp item id
