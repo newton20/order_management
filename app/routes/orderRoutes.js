@@ -127,6 +127,9 @@ module.exports = function(app) {
             {
               SMS_Mail.sendSMS(updatedOrder.shopper.phone,"15028",[updatedOrder.shopper.familyName,updatedOrder.shippingOption.id]);
             }
+            if (order.shopper.email) {
+              SMS_Mail.sendEmail(mailConfig.orderShipped, [order.shopper.familyName, updatedOrder.shippingOption.id], order.shopper.email);
+            }
           }
           res.setHeader('Cache-Control', 'no-cache');
           return res.json(savedOrder);
@@ -265,12 +268,16 @@ module.exports = function(app) {
 
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
-        if(order.shopper.phone && order.shopper.phone.length >= 11)
-        {
-          ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function(shortLink){
-          SMS_Mail.sendSMS(order.shopper.phone,"15027",[order.shopper.familyName,shortLink]);
-          });
-        }
+        
+        ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
+          if (order.shopper.phone && order.shopper.phone.length >= 11) {
+            SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName, shortLink]);
+          }
+          
+          if (order.shopper.email) {
+            SMS_Mail.sendEmail(mailConfig.orderPalced, [order.shopper.familyName, order.partnerId, shortLink], order.shopper.email);
+          }
+        });
         // iterate through items returned from MCP platform to get mcp item id
         // update items in merchant order with retrieved mcp item id
         underscore.each(savedOrder.items, function(savedItem) {
