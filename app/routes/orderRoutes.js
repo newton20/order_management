@@ -275,7 +275,7 @@ module.exports = function(app) {
           }
           
           if (order.shopper.email) {
-            SMS_Mail.sendEmail(mailConfig.orderPalced, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
+            SMS_Mail.sendEmail(mailConfig.orderPalced, [order.shopper.familyName + " " + order.shopper.firstName, shortLink], order.shopper.email);
           }
         });
         // iterate through items returned from MCP platform to get mcp item id
