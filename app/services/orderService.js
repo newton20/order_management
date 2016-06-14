@@ -107,7 +107,7 @@ var updateItemStatus = function(order, itemId, newStatus, itemStatusCallback) {
   }
   
   var targetItem = underscore.find(order.items, function(item) {
-    return item._id.toString() === itemId;
+    return item._id.toString() === itemId || item.itemReferenceId.toString() === itemId;
   });
   
   targetItem.status = newStatus;
