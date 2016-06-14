@@ -20,6 +20,41 @@ var sendSMS = function (receiver,tmplateId,content) {
         console.log("SMS error");
       });
 };
+
+var sendEmail = function(mailConfig, content, mailTo)
+{
+    var criteria = {
+        mailResourceKey: mailConfig.resourceKey,
+        subject:mailConfig.subject,
+        mailBody:Stringformat(mailConfig.body,content),
+        mailTo:mailTo
+    };
+        rest.post('http://localhost:8080/MailService.svc/Mail/Send', {
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        data: JSON.stringify(criteria)
+      }).on('success', function(result, response) {
+          console.log("Email Sent");
+      }).on('fail', function(data, response) {
+        // if platform returned a fail signal, bubble failure to client with returned data
+        console.log("Email fail");
+        
+      }).on('error', function(err, response) {
+        // if unexpected happens, bubble exception to client with error information
+        console.log("Email error");
+      });
+}
+
+var Stringformat = function(format, arguments) {
+    if( arguments.length == 0 )
+        return null;
+    for(var i=0;i<arguments.length;i++) {
+        var re = new RegExp('\\{' + (i) + '\\}','gm');
+        format = format.replace(re, arguments[i]);
+    }
+    return format;
+}
+
 module.exports = {
-    sendSMS : sendSMS
+    sendSMS : sendSMS,
+    sendEmail : sendEmail
 }
