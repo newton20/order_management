@@ -77,7 +77,7 @@ module.exports = function(app) {
   app.post('/api/v1/events', function(req, res) {
     var eventId = req.body.eventId;
     var eventType = req.body.eventType;
-    var orderId = req.body.merchantOrderId;
+    var orderReferenceId = req.body.merchantOrderId;
     var newItemStatus = statusMap[eventType];
 
     // check if the mcp event maps to a merchant status change
@@ -91,7 +91,7 @@ module.exports = function(app) {
       return res.status(204).send('no content');
     }
 
-    Order.findById(orderId, function(err, order) {
+    Order.findOne({'orderReferenceId':orderReferenceId}, function(err, order) {
       if (err) {
         return res.status(404).send(err);
       }
@@ -280,13 +280,13 @@ module.exports = function(app) {
         });
         // iterate through items returned from MCP platform to get mcp item id
         // update items in merchant order with retrieved mcp item id
-        underscore.each(savedOrder.items, function(savedItem) {
-          var matchedItem = underscore.find(order.items, function(item) {
-            return item._id.toString() === savedItem.merchantItemId;
+        underscore.each(order.items, function (item) {
+          var savedItem = underscore.find(savedOrder.fulfillmentGroups[0].items, function (mcpItem) {
+            return mcpItem.merchantItemId === item.itemReferenceId;
           });
-          
-          if (matchedItem) {
-            matchedItem.mcpId = savedItem.itemId;
+
+          if (savedItem) {
+            item.mcpId = savedItem.itemId;
           }
         });
 
