@@ -13,7 +13,7 @@ var mapMerchantOrderToPlatformOrder = function(merchantOrder) {
   underscore.each(merchantOrder.items, function(item) {
     var platformItem = {
       'merchantItemId': item.itemReferenceId,
-      'eventCallbackUrl': 'https//139.224.29.98:10100/api/v1/events',
+      'eventCallbackUrl': 'https://139.224.29.98:10100/api/v1/events',
       'skuCode': item.product.mcpSku,
       'quantity': item.quantity,
       'merchantProductName': item.product.name,
