@@ -13,7 +13,6 @@ var mapMerchantOrderToPlatformOrder = function(merchantOrder) {
   underscore.each(merchantOrder.items, function(item) {
     var platformItem = {
       'merchantItemId': item.itemReferenceId,
-      'eventCallbackUrl': 'https://139.224.29.98:10100/api/v1/events',
       'skuCode': item.product.mcpSku,
       'quantity': item.quantity,
       'merchantProductName': item.product.name,
@@ -52,6 +51,7 @@ var mapMerchantOrderToPlatformOrder = function(merchantOrder) {
     'merchantOrderId': merchantOrder.orderReferenceId,
     'merchantCustomerId': merchantOrder.shopper.key,
     'merchantPlacedDate': merchantOrder.createdTime,
+    'eventCallbackUrl': 'http://139.224.29.98:10100/api/v1/events',
     'merchantId': 'mow-china',
     'merchantSalesChannel': 'online-solution',
     'merchantOrderSupportContact': {

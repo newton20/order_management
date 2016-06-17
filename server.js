@@ -87,7 +87,8 @@ var options = {
   passphrase: '123456'
 };
 
-https.createServer(options, app).listen(port);
+//https.createServer(options, app).listen(port);
+app.listen(port);
 
 // shoutout to the user
 console.log('Order management service is listening on port ' + port);
