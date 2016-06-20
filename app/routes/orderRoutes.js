@@ -7,6 +7,7 @@ var ShortLink = require('../services/ShortLinkService');
 var rest = require('restler');
 var underscore = require('underscore');
 var mailConfig = require('../../config/mailConfig');
+var async = require('async');
 
 module.exports = function(app) {
   //
@@ -18,38 +19,41 @@ module.exports = function(app) {
     var partnerId = "";
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
-    
+
     // send platform order to mcp platform
-    underscore.each(requestBody.items, function(item) {
+    async.eachSeries(requestBody.items, function (item,callback) {
       delete item["_id"];
-      var productInfo = ProductService.getProductByMarketplaceId(item.product.id);
-      if (productInfo) {
-        item.product.mcpSku = productInfo.mcpSku;
-        item.product.name = productInfo.name;
-        item.product.description = productInfo.description;
-        if (partnerId.length == 0) {
-          partnerId = productInfo.partner.id;
+      ProductService.getProductByMarketplaceId(item.product.id, function (productInfo) {
+        if (productInfo) {
+          item.product.mcpSku = productInfo.mcpSKU;
+          item.product.name = productInfo.name;
+          item.product.description = productInfo.description;
+          if (partnerId.length == 0) {
+            partnerId = productInfo.partner.id;
+          }
         }
-      }
-    });
-    requestBody.partnerId = partnerId;
-
-    Order.create(requestBody, function(err, order) {
-      if (err) {
-        return res.send(err);
-      }
-      
-      ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
-        if (order.shopper.phone && order.shopper.phone.length >= 11) {
-          SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
-        }
-        if (order.shopper.email) {
-          SMS_Mail.sendEmail(mailConfig.newOrder, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
-        }
+        callback();
       });
+    }, function () {
+      requestBody.partnerId = partnerId;
 
-      res.setHeader('Cache-Control', 'no-cache');
-      return res.json(order);
+      Order.create(requestBody, function (err, order) {
+        if (err) {
+          return res.send(err);
+        }
+
+        ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
+          if (order.shopper.phone && order.shopper.phone.length >= 11) {
+            SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
+          }
+          if (order.shopper.email) {
+            SMS_Mail.sendEmail(mailConfig.newOrder, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
+          }
+        });
+
+        res.setHeader('Cache-Control', 'no-cache');
+        return res.json(order);
+      });
     });
   });
 
