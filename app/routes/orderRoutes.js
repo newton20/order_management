@@ -1,6 +1,7 @@
 var Order = require('../models/order');
 var statusMap = require('../models/statusMap');
 var OrderService = require('../services/orderService');
+var ProductService = require('../services/productService');
 var SMS_Mail = require('../services/SMS&MailService');
 var ShortLink = require('../services/ShortLinkService');
 var rest = require('restler');
@@ -14,11 +15,25 @@ module.exports = function(app) {
   app.post('/api/v1/orders', function(req, res) {
 
     var requestBody = req.body;
+    var partnerId = "";
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
+    
+    // send platform order to mcp platform
     underscore.each(requestBody.items, function(item) {
       delete item["_id"];
+      var productInfo = ProductService.getProductByMarketplaceId(item.product.id);
+      if (productInfo) {
+        item.product.mcpSku = productInfo.mcpSku;
+        item.product.name = productInfo.name;
+        item.product.description = productInfo.description;
+        if (partnerId.length == 0) {
+          partnerId = productInfo.partner.id;
+        }
+      }
     });
+    requestBody.partnerId = partnerId;
+
     Order.create(requestBody, function(err, order) {
       if (err) {
         return res.send(err);

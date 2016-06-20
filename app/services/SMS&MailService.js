@@ -29,7 +29,7 @@ var sendEmail = function(mailConfig, content, mailTo)
         mailBody:Stringformat(mailConfig.body,content),
         mailTo:mailTo
     };
-        rest.post('http://localhost:8080/MailService.svc/Mail/Send', {
+        rest.post('http://139.224.68.25:2333/MailService.svc/Mail/Send', {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {
