@@ -1,7 +1,9 @@
 var rest = require('restler');
+var serverConfig = require('../../config/server');
 
-var getProductByMarketplaceId = function (marketplaceId, callback) {
-    rest.get('http://139.224.29.98:10200/api/v1/products/marketplaceId/' + marketplaceId, {
+var getProductByMarketplaceId = function (marketplace_id, callback) {
+    var marketplaceId = marketplace_id;
+    rest.get(serverConfig.ProductService + marketplaceId, {
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
     }).on('success', function (product, response) {
         callback(product);

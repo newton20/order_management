@@ -21,14 +21,14 @@ module.exports = function(app) {
     delete requestBody["_id"];
 
     // send platform order to mcp platform
-    async.eachSeries(requestBody.items, function (item,callback) {
+    async.eachSeries(requestBody.items, function(item, callback) {
       delete item["_id"];
       ProductService.getProductByMarketplaceId(item.product.id, function (productInfo) {
         if (productInfo) {
           item.product.mcpSku = productInfo.mcpSKU;
           item.product.name = productInfo.name;
           item.product.description = productInfo.description;
-          if (partnerId.length == 0) {
+          if (partnerId.length === 0) {
             partnerId = productInfo.partner.id;
           }
         }

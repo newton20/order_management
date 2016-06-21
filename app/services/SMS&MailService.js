@@ -1,4 +1,5 @@
 var rest = require('restler');
+var serverConfig = require('../../config/server');
 
 var sendSMS = function (receiver,tmplateId,content) {
     var criteria = {
@@ -6,7 +7,7 @@ var sendSMS = function (receiver,tmplateId,content) {
         template:tmplateId,
         content:JSON.stringify(content)
     };
-    rest.post('http://139.224.68.25:2333/SMSService.svc/SMS/Send', {
+    rest.post(serverConfig.SMSService, {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {
@@ -29,7 +30,7 @@ var sendEmail = function(mailConfig, content, mailTo)
         mailBody:Stringformat(mailConfig.body,content),
         mailTo:mailTo
     };
-        rest.post('http://139.224.68.25:2333/MailService.svc/Mail/Send', {
+        rest.post(serverConfig.MailService, {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {
