@@ -8,6 +8,7 @@ var rest = require('restler');
 var underscore = require('underscore');
 var mailConfig = require('../../config/mailConfig');
 var async = require('async');
+var serverConfig = require('../../config/server');
 
 module.exports = function(app) {
   //
@@ -42,7 +43,7 @@ module.exports = function(app) {
           return res.send(err);
         }
 
-        ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
+        ShortLink.getShortLink(serverConfig.OnlineSolutionEntryPoint + order.partnerId + "_" + order._id, function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
           }
@@ -278,7 +279,7 @@ module.exports = function(app) {
       var platformOrder = OrderService.mapMerchantOrderToPlatformOrder(order);
 
       // send platform order to mcp platform
-      rest.post('https://int-merchantorder.commerce.cimpress.io/v1/orders', {
+      rest.post(serverConfig.MCPOrderService, {
         username: 'mow-china',
         password: 'Spap4uPhUpHe',
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
@@ -288,7 +289,7 @@ module.exports = function(app) {
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
         
-        ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
+        ShortLink.getShortLink(serverConfig.OnlineSolutionEntryPoint + order.partnerId + "_" + order._id, function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName + " " + order.shopper.firstName, shortLink]);
           }
