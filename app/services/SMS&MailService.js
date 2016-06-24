@@ -1,5 +1,6 @@
 var rest = require('restler');
 var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
 var sendSMS = function (receiver,tmplateId,content) {
     var criteria = {
@@ -27,7 +28,7 @@ var sendEmail = function(mailConfig, content, mailTo)
     var criteria = {
         mailResourceKey: mailConfig.resourceKey,
         subject:mailConfig.subject,
-        mailBody:Stringformat(mailConfig.body,content),
+        mailBody:stringHelper.stringformat(mailConfig.body,content),
         mailTo:mailTo
     };
         rest.post(serverConfig.MailService, {
@@ -43,16 +44,6 @@ var sendEmail = function(mailConfig, content, mailTo)
         // if unexpected happens, bubble exception to client with error information
         console.log("Email error");
       });
-}
-
-var Stringformat = function(format, arguments) {
-    if( arguments.length == 0 )
-        return null;
-    for(var i=0;i<arguments.length;i++) {
-        var re = new RegExp('\\{' + (i) + '\\}','gm');
-        format = format.replace(re, arguments[i]);
-    }
-    return format;
 }
 
 module.exports = {

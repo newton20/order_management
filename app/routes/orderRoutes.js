@@ -9,6 +9,7 @@ var underscore = require('underscore');
 var mailConfig = require('../../config/mailConfig');
 var async = require('async');
 var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
 module.exports = function(app) {
   //
@@ -16,15 +17,16 @@ module.exports = function(app) {
   // create a new order
   app.post('/api/v1/orders', function(req, res) {
 
-    var requestBody = req.body;
-    var partnerId = "";
+    var requestBody = req.body,
+      markerplaceCode = requestBody.markerplaceCode,
+      partnerId = "";
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
 
     // send platform order to mcp platform
     async.eachSeries(requestBody.items, function(item, callback) {
       delete item["_id"];
-      ProductService.getProductByMarketplaceId(item.product.id, function (productInfo) {
+      ProductService.getProductByMarketplaceId(markerplaceCode, item.product.id, function (productInfo) {
         if (productInfo) {
           item.product.mcpSku = productInfo.mcpSKU;
           item.product.name = productInfo.name;
@@ -34,7 +36,7 @@ module.exports = function(app) {
           }
         }
         callback();
-      });
+      })
     }, function () {
       requestBody.partnerId = partnerId;
 
@@ -43,7 +45,7 @@ module.exports = function(app) {
           return res.send(err);
         }
 
-        ShortLink.getShortLink(serverConfig.OnlineSolutionEntryPoint + order.partnerId + "_" + order._id, function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(erverConfig.OnlineSolutionEntryPoint, order.partnerId, order._id), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
           }
@@ -289,7 +291,7 @@ module.exports = function(app) {
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
         
-        ShortLink.getShortLink(serverConfig.OnlineSolutionEntryPoint + order.partnerId + "_" + order._id, function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(erverConfig.OnlineSolutionEntryPoint, order.partnerId, order._id), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName + " " + order.shopper.firstName, shortLink]);
           }

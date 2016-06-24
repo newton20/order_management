@@ -1,9 +1,10 @@
 var rest = require('restler');
 var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
-var getProductByMarketplaceId = function (marketplace_id, callback) {
+var getProductByMarketplaceId = function (marketplaceCode, marketplace_id, callback) {
     var marketplaceId = marketplace_id;
-    rest.get(serverConfig.ProductService + marketplaceId, {
+    rest.get(stringHelper.stringformat(serverConfig.ProductService ,marketplaceCode, marketplaceId), {
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
     }).on('success', function (product, response) {
         callback(product);

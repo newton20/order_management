@@ -1,8 +1,9 @@
 var rest = require('restler');
 var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
 var getShortLink = function (longLink, callback) {
-    rest.get(serverConfig.ShortLinkService + longLink, {
+    rest.get(stringHelper.stringformat(serverConfig.ShortLinkService, longLink), {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}
       }).on('success', function(result, response) {
           // remove http://t.cn/
