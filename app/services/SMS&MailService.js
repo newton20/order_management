@@ -1,4 +1,6 @@
 var rest = require('restler');
+var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
 var sendSMS = function (receiver,tmplateId,content) {
     var criteria = {
@@ -6,7 +8,7 @@ var sendSMS = function (receiver,tmplateId,content) {
         template:tmplateId,
         content:JSON.stringify(content)
     };
-    rest.post('http://139.224.68.25:2333/SMSService.svc/SMS/Send', {
+    rest.post(serverConfig.SMSService, {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {
@@ -26,10 +28,10 @@ var sendEmail = function(mailConfig, content, mailTo)
     var criteria = {
         mailResourceKey: mailConfig.resourceKey,
         subject:mailConfig.subject,
-        mailBody:Stringformat(mailConfig.body,content),
+        mailBody:stringHelper.stringformat(mailConfig.body,content),
         mailTo:mailTo
     };
-        rest.post('http://localhost:8080/MailService.svc/Mail/Send', {
+        rest.post(serverConfig.MailService, {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {
@@ -42,16 +44,6 @@ var sendEmail = function(mailConfig, content, mailTo)
         // if unexpected happens, bubble exception to client with error information
         console.log("Email error");
       });
-}
-
-var Stringformat = function(format, arguments) {
-    if( arguments.length == 0 )
-        return null;
-    for(var i=0;i<arguments.length;i++) {
-        var re = new RegExp('\\{' + (i) + '\\}','gm');
-        format = format.replace(re, arguments[i]);
-    }
-    return format;
 }
 
 module.exports = {

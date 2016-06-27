@@ -1,11 +1,15 @@
 var Order = require('../models/order');
 var statusMap = require('../models/statusMap');
 var OrderService = require('../services/orderService');
+var ProductService = require('../services/productService');
 var SMS_Mail = require('../services/SMS&MailService');
 var ShortLink = require('../services/ShortLinkService');
 var rest = require('restler');
 var underscore = require('underscore');
 var mailConfig = require('../../config/mailConfig');
+var async = require('async');
+var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
 module.exports = function(app) {
   //
@@ -13,28 +17,46 @@ module.exports = function(app) {
   // create a new order
   app.post('/api/v1/orders', function(req, res) {
 
-    var requestBody = req.body;
+    var requestBody = req.body,
+      markerplaceCode = requestBody.markerplaceCode,
+      partnerId = "";
     requestBody.updatedTime = Date.now();
     delete requestBody["_id"];
-    underscore.each(requestBody.items, function(item) {
-      delete item["_id"];
-    });
-    Order.create(requestBody, function(err, order) {
-      if (err) {
-        return res.send(err);
-      }
-      
-      ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
-        if (order.shopper.phone && order.shopper.phone.length >= 11) {
-          SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
-        }
-        if (order.shopper.email) {
-          SMS_Mail.sendEmail(mailConfig.newOrder, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
-        }
-      });
 
-      res.setHeader('Cache-Control', 'no-cache');
-      return res.json(order);
+    // send platform order to mcp platform
+    async.eachSeries(requestBody.items, function(item, callback) {
+      delete item["_id"];
+      ProductService.getProductByMarketplaceId(markerplaceCode, item.product.id, function (productInfo) {
+        if (productInfo) {
+          item.product.mcpSku = productInfo.mcpSKU;
+          item.product.name = productInfo.name;
+          item.product.description = productInfo.description;
+          if (partnerId.length === 0) {
+            partnerId = productInfo.partner.id;
+          }
+        }
+        callback();
+      })
+    }, function () {
+      requestBody.partnerId = partnerId;
+
+      Order.create(requestBody, function (err, order) {
+        if (err) {
+          return res.send(err);
+        }
+
+        ShortLink.getShortLink(stringHelper.stringformat(erverConfig.OnlineSolutionEntryPoint, order.partnerId, order._id), function (shortLink) {
+          if (order.shopper.phone && order.shopper.phone.length >= 11) {
+            SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
+          }
+          if (order.shopper.email) {
+            SMS_Mail.sendEmail(mailConfig.newOrder, [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink], order.shopper.email);
+          }
+        });
+
+        res.setHeader('Cache-Control', 'no-cache');
+        return res.json(order);
+      });
     });
   });
 
@@ -259,7 +281,7 @@ module.exports = function(app) {
       var platformOrder = OrderService.mapMerchantOrderToPlatformOrder(order);
 
       // send platform order to mcp platform
-      rest.post('https://int-merchantorder.commerce.cimpress.io/v1/orders', {
+      rest.post(serverConfig.MCPOrderService, {
         username: 'mow-china',
         password: 'Spap4uPhUpHe',
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
@@ -269,7 +291,7 @@ module.exports = function(app) {
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
         
-        ShortLink.getShortLink("http://139.224.68.25/Home/Index/" + order.partnerId + "_" + order._id, function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(erverConfig.OnlineSolutionEntryPoint, order.partnerId, order._id), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName + " " + order.shopper.firstName, shortLink]);
           }

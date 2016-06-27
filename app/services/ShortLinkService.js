@@ -1,7 +1,9 @@
 var rest = require('restler');
+var serverConfig = require('../../config/server');
+var stringHelper = require('../utility/stringHelper');
 
 var getShortLink = function (longLink, callback) {
-    rest.get('http://139.224.68.25:6666/ShortLink.svc/?url_long='+longLink, {
+    rest.get(stringHelper.stringformat(serverConfig.ShortLinkService, longLink), {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}
       }).on('success', function(result, response) {
           // remove http://t.cn/
