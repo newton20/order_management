@@ -45,7 +45,7 @@ module.exports = function(app) {
           return res.send(err);
         }
 
-        ShortLink.getShortLink(stringHelper.stringformat(erverConfig.OnlineSolutionEntryPoint, order.partnerId, order._id), function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(serverConfig.OnlineSolutionEntryPoint, [order.partnerId, order._id]), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
           }
@@ -292,7 +292,7 @@ module.exports = function(app) {
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
         
-        ShortLink.getShortLink(stringHelper.stringformat(erverConfig.OnlineSolutionEntryPoint, order.partnerId, order._id), function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(serverConfig.OnlineSolutionEntryPoint, [order.partnerId, order._id]), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName + " " + order.shopper.firstName, shortLink]);
           }
