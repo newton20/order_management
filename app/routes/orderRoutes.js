@@ -28,7 +28,7 @@ module.exports = function(app) {
       delete item["_id"];
       ProductService.getProductByMarketplaceId(markerplaceCode, item.product.id, function (productInfo) {
         if (productInfo) {
-          item.product.mcpSku = productInfo.mcpSKU;
+          item.product.mcpSku = productInfo.mcpSku;
           item.product.name = productInfo.name;
           item.product.description = productInfo.description;
           if (partnerId.length === 0) {
