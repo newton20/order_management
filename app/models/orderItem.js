@@ -14,8 +14,7 @@ var orderItemSchema = new Schema({
   document: {
     documentId: { type: String },
     instructionSourceEndpointUrl: { type: String },
-    instructionSourceVersion: { type: String },
-    cachedImageUrl: { type: String }
+    instructionSourceVersion: { type: String }
   },
   amount: {
     currency: { type: String },

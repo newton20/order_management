@@ -77,8 +77,7 @@ module.exports = function(app) {
           item.document = {
         'documentId': req.body.documentId,
         'instructionSourceEndpointUrl': req.body.instructionSourceEndpointUrl,
-        "instructionSourceVersion": req.body.instructionSourceVersion,
-        'cachedImageUrl': req.body.cachedImageUrl
+        "instructionSourceVersion": req.body.instructionSourceVersion
         };
         }
        });      
