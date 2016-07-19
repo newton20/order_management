@@ -4,6 +4,7 @@ var OrderService = require('../services/orderService');
 var ProductService = require('../services/productService');
 var SMS_Mail = require('../services/SMS&MailService');
 var ShortLink = require('../services/ShortLinkService');
+var Token = require('../services/tokenService');
 var rest = require('restler');
 var underscore = require('underscore');
 var async = require('async');
@@ -289,12 +290,12 @@ module.exports = function(app) {
 
       // map merchant order to platform order
       var platformOrder = OrderService.mapMerchantOrderToPlatformOrder(order);
+      var token = Token.getToken();
 
       // send platform order to mcp platform
       rest.post(APIConfig.MCPOrderService, {
-        username: 'mow-china',
-        password: 'Spap4uPhUpHe',
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token},
         data: JSON.stringify(platformOrder)
       }).on('success', function(savedOrder, response) {
 

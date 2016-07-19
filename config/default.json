@@ -8,6 +8,7 @@
             "port": "10100"
         },
         "APIConfig": {
+            "tokenService":"http://localhost:803/api/Token/commerce",
             "eventCallbackUrl": "http://139.224.29.98:10100/api/v1/events",
             "SMSService": "http://139.224.68.25:2333/SMSService.svc/SMS/Send",
             "MailService": "http://139.224.68.25:2333/MailService.svc/Mail/Send",
