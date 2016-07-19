@@ -6,10 +6,20 @@ var SMS_Mail = require('../services/SMS&MailService');
 var ShortLink = require('../services/ShortLinkService');
 var rest = require('restler');
 var underscore = require('underscore');
-var mailConfig = require('../../config/mailConfig');
 var async = require('async');
-var serverConfig = require('../../config/server');
 var stringHelper = require('../utility/stringHelper');
+var config = require('config');
+
+var APIConfig = {};
+var mailConfig = {};
+
+if (config.has('Order.APIConfig')) {
+  APIConfig = config.get('Order.APIConfig');
+}
+
+if (config.has('Order.mailConfig')) {
+  mailConfig = config.get('Order.mailConfig');
+}
 
 module.exports = function(app) {
   //
@@ -45,7 +55,7 @@ module.exports = function(app) {
           return res.send(err);
         }
 
-        ShortLink.getShortLink(stringHelper.stringformat(serverConfig.OnlineSolutionEntryPoint, [order.partnerId, order._id]), function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(APIConfig.OnlineSolutionEntryPoint, [order.partnerId, order._id]), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "7472", [order.shopper.familyName + " " + order.shopper.firstName, order.partnerId, shortLink]);
           }
@@ -281,7 +291,7 @@ module.exports = function(app) {
       var platformOrder = OrderService.mapMerchantOrderToPlatformOrder(order);
 
       // send platform order to mcp platform
-      rest.post(serverConfig.MCPOrderService, {
+      rest.post(APIConfig.MCPOrderService, {
         username: 'mow-china',
         password: 'Spap4uPhUpHe',
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
@@ -291,7 +301,7 @@ module.exports = function(app) {
         // on success, update merchant order with identifiers returned from platform
         order.mcpId = savedOrder.orderId;
         
-        ShortLink.getShortLink(stringHelper.stringformat(serverConfig.OnlineSolutionEntryPoint, [order.partnerId, order._id]), function (shortLink) {
+        ShortLink.getShortLink(stringHelper.stringformat(APIConfig.OnlineSolutionEntryPoint, [order.partnerId, order._id]), function (shortLink) {
           if (order.shopper.phone && order.shopper.phone.length >= 11) {
             SMS_Mail.sendSMS(order.shopper.phone, "15027", [order.shopper.familyName + " " + order.shopper.firstName, shortLink]);
           }

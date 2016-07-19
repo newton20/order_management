@@ -1,6 +1,12 @@
 var rest = require('restler');
-var serverConfig = require('../../config/server');
 var stringHelper = require('../utility/stringHelper');
+var config = require('config');
+
+var APIConfig = {};
+
+if (config.has('Order.APIConfig')) {
+  APIConfig = config.get('Order.APIConfig');
+}
 
 var sendSMS = function (receiver,tmplateId,content) {
     var criteria = {
@@ -8,7 +14,7 @@ var sendSMS = function (receiver,tmplateId,content) {
         template:tmplateId,
         content:JSON.stringify(content)
     };
-    rest.post(serverConfig.SMSService, {
+    rest.post(APIConfig.SMSService, {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         data: JSON.stringify(criteria)
       }).on('success', function(result, response) {

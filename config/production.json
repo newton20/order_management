@@ -1,0 +1,15 @@
+{
+    "Order": {
+        "dbConfig": {
+            "url": "mongodb://order_service:sa@dds-uf6577b058aaac842.mongodb.rds.aliyuncs.com:3717,dds-uf6577b058aaac841.mongodb.rds.aliyuncs.com:3717/Test_Orders?replicaSet=mgset-1192893"
+        },
+        "APIConfig": {
+            "SMSService": "http://139.224.68.25:2333/SMSService.svc/SMS/Send",
+            "MailService": "http://139.224.68.25:2333/MailService.svc/Mail/Send",
+            "ShortLinkService": "http://139.224.68.25:6666/ShortLink.svc/?url_long={0}",
+            "ProductService": "http://139.224.29.98:10200/api/v1/products/marketplaceCode/{0}/marketplaceId/{1}",
+            "OnlineSolutionEntryPoint": "http://139.224.68.25/Home/Index/{0}_{1}",
+            "MCPOrderService": "https://int-merchantorder.commerce.cimpress.io/v1/orders"
+        }
+    }
+}

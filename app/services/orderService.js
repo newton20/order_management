@@ -3,6 +3,13 @@
 var underscore = require('underscore');
 var statuses = require('../models/status');
 var Order = require('../models/order');
+var config = require('config');
+
+var APIConfig = {};
+
+if (config.has('Order.APIConfig')) {
+  APIConfig = config.get('Order.APIConfig');
+}
 
 //
 // Map merchant order to mcp platform order contract
@@ -51,7 +58,7 @@ var mapMerchantOrderToPlatformOrder = function(merchantOrder) {
     'merchantOrderId': merchantOrder.orderReferenceId,
     'merchantCustomerId': merchantOrder.shopper.key,
     'merchantPlacedDate': merchantOrder.createdTime,
-    'eventCallbackUrl': 'http://139.224.29.98:10100/api/v1/events',
+    'eventCallbackUrl': APIConfig.eventCallbackUrl,
     'merchantId': 'mow-china',
     'merchantSalesChannel': 'online-solution',
     'merchantOrderSupportContact': {

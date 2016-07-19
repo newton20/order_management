@@ -10,12 +10,13 @@ var fs             = require('fs');
 var https          = require('https');
 var argv           = require('minimist')(process.argv.slice(2));
 var swagger        = require('swagger-node-express');
+var config         = require('config');
 
 // configuration ===========================================
 
 // config files
-var db = require('./config/db');
-var serverConfig = require('./config/server');
+var db = config.get('Order.dbConfig');
+var serverConfig = config.get('Order.serverConfig');
 
 // set our port
 var port = process.env.PORT || serverConfig.port;
