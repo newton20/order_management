@@ -9,7 +9,7 @@
             "ShortLinkService": "http://139.224.68.25:6666/ShortLink.svc/?url_long={0}",
             "ProductService": "http://139.224.29.98:10200/api/v1/products/marketplaceCode/{0}/marketplaceId/{1}",
             "OnlineSolutionEntryPoint": "http://139.224.68.25/Home/Index/{0}_{1}",
-            "MCPOrderService": "https://merchantorder.commerce.cimpress.io/v1/orders"
+            "MCPOrderService": "https://int-merchantorder.commerce.cimpress.io/v1/orders"
         }
     }
 }
