@@ -2,11 +2,7 @@ var rest = require('restler');
 var stringHelper = require('../utility/stringHelper');
 var config = require('config');
 
-var APIConfig = {};
-
-if (config.has('Order.APIConfig')) {
-  APIConfig = config.get('Order.APIConfig');
-}
+var APIConfig = config.get('Order.APIConfig');
 
 var sendSMS = function (receiver,tmplateId,content) {
     var criteria = {

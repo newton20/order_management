@@ -4,23 +4,15 @@ var OrderService = require('../services/orderService');
 var ProductService = require('../services/productService');
 var SMS_Mail = require('../services/SMS&MailService');
 var ShortLink = require('../services/ShortLinkService');
-var Token = require('../services/tokenService');
+var Token = require('../services/TokenService');
 var rest = require('restler');
 var underscore = require('underscore');
 var async = require('async');
 var stringHelper = require('../utility/stringHelper');
 var config = require('config');
 
-var APIConfig = {};
-var mailConfig = {};
-
-if (config.has('Order.APIConfig')) {
-  APIConfig = config.get('Order.APIConfig');
-}
-
-if (config.has('Order.mailConfig')) {
-  mailConfig = config.get('Order.mailConfig');
-}
+var APIConfig = config.get('Order.APIConfig');
+var mailConfig = config.get('Order.mailConfig');
 
 module.exports = function(app) {
   //

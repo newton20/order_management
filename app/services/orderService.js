@@ -5,11 +5,7 @@ var statuses = require('../models/status');
 var Order = require('../models/order');
 var config = require('config');
 
-var APIConfig = {};
-
-if (config.has('Order.APIConfig')) {
-  APIConfig = config.get('Order.APIConfig');
-}
+var APIConfig = config.get('Order.APIConfig');
 
 //
 // Map merchant order to mcp platform order contract
